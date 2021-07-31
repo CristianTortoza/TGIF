@@ -140,52 +140,93 @@ if(document.title == "TGIF Home"){
 				averageDemocraticVotes: 0,
 				averageRepublicans: 0,
 				averageIndependent: 0,
+				averageMissedDemocratics:0,
+				averageMissedRepublicans: 0,
 				lessVotesLost: [], // Least Engaged (Bottom 10% Attendance)
 				moreVotesLost: [], // Most Engaged (Top 10% Attendance)
 				lessCommitted: [], // Least Loyal (Bottom 10% Party)
 				moreCommitted: [], // Most Loyal (Top 10% of Party)
+
 							
 			}
 			
-			let averageDemocratics = []
-			let averageRepublicans = []
-			let newTables = []
+			let averageDemocratics = [] // Total porcentaje de votos Democratics
+			let averageRepublicans = [] // Total porcentaje de votos Republicans 
+			let averageDemocraticsMissed = [] // Total poncentaje de votos perdidos Democraticcs
+			let averageRepublicansMissed = [] // Total porcentaje de votos perdidos Republicans 
+ 			let newTables = []
 	
 			membersTable.forEach(member =>{							
 				newTables.push(member)	   // Creo una nueva tabla --- Sumo la cantidad de miembros en los partidos --- pusheo dos arrays para sacar el porcentaje
 				if (member.party == "R"){	
 					statistics.totalRepublicans++	
 					averageRepublicans.push(member.votes_with_party_pct) 
+					averageRepublicansMissed.push(member.votes_against_party_pct)
 				}else if(member.party == "D"){
 					statistics.totalDemocrats++
-					averageDemocratics.push(member.votes_with_party_pct)	
+					averageDemocratics.push(member.votes_with_party_pct)
+					averageDemocraticsMissed.push(member.votes_against_party_pct)	
 				}else if(member.party == "ID"){
 					statistics.totalIndependent++
 				}
 				
 				statistics.totalMatches = statistics.totalRepublicans + statistics.totalDemocrats + statistics.totalIndependent 
 			})
-
-			
-
+			console.log(averageRepublicansMissed)
 			newTables = newTables.filter(members => members.total_votes > 0 ) // Elimino aquellos miembros sin votos
 			statistics.averageDemocraticVotes = (averageDemocratics.reduce((a , b) => a + b) / averageDemocratics.length).toFixed(2)	// Porcentaje de
 			statistics.averageRepublicans = (averageRepublicans.reduce((a , b) => a + b) / averageRepublicans.length).toFixed(2)		//	votos R/D
 
+			statistics.averageMissedDemocratics = (averageDemocraticsMissed.reduce((a, b) => a + b) /averageDemocraticsMissed.length).toFixed(2)	
+			statistics.averageRepublicansMissed = (averageRepublicansMissed.reduce ((a, b) => a + b ) /averageRepublicansMissed.length).toFixed(2)
+			console.log(statistics.averageMissedDemocratics)
+			console.log(statistics.averageMissedRepublicans)
 			let orderedPercentage = Math.ceil(newTables.length *10 /100) 
+
 			let lostVotesSorted = newTables.sort((a, b) => b.missed_votes_pct - a.missed_votes_pct)
 			statistics.lessVotesLost = lostVotesSorted.slice(0, orderedPercentage) // Least Engaged (Bottom 10% Attendance)
+
 			let moreVotesSorted  = newTables.sort((a, b) => a.missed_votes_pct - b.missed_votes_pct)
 			statistics.moreVotesLost = moreVotesSorted.slice(0, orderedPercentage) // Most Engaged (Top 10% Attendance)
+
 			let moreLoyalSorted = newTables.sort((a, b ) => b.votes_with_party_pct - a.votes_with_party_pct)
 			statistics.moreCommitted = moreLoyalSorted.slice(0, orderedPercentage) // Most Loyal (Top 10% of Party)
-			let lestLoyalSorted = newTables.sort((a, b ) => a.votes_with_party_pct - b.votes_with_party_pct)
-			statistics.lessCommitted = moreLoyalSorted.slice(0, orderedPercentage) // Least Loyal (Bottom 10% Party)
-			
-			let tableAttendanceTop = document.getElementById("tableAttendance")?document.getElementById("tableAttendance"): document.getElementById("tableLoyalty") 
 
-			function tableTop(){
-				tableAttendanceTop.innerHTML= ` 
+			let lestLoyalSorted = newTables.sort((a, b ) => a.votes_with_party_pct - b.votes_with_party_pct)
+			statistics.lessCommitted = lestLoyalSorted.slice(0, orderedPercentage) // Least Loyal (Bottom 10% Party)
+			
+			console.log(statistics.lessCommitted)
+			console.log(statistics.moreCommitted)
+			
+			function tableTopAttendance(id){
+				let table = document.getElementById(id)
+				table.innerHTML= ` 
+				<tr>
+					<td>Democrats</td>
+					<td>${statistics.totalDemocrats}</td>
+					<td>${statistics.averageMissedDemocratics}%</td>
+				</tr>
+				<tr>
+					<td>Republicans</td>
+					<td>${statistics.totalRepublicans}</td>
+					<td>${statistics.averageRepublicansMissed}%</td>
+				</tr>
+				<tr>
+					<td>Independents</td>
+					<td>${statistics.totalIndependent || "-"}</td>
+					<td>${statistics.averageIndependent || "-"}	
+				</tr>
+				<tr>
+					<td>Total</td>
+					<td>${statistics.totalMatches}</td>	
+					<td>-</td>
+				</tr>		
+				`
+			}
+			
+			function tableTopLoyalty(id){
+				let table = document.getElementById(id)
+				table.innerHTML= ` 
 				<tr>
 					<td>Democrats</td>
 					<td>${statistics.totalDemocrats}</td>
@@ -208,17 +249,41 @@ if(document.title == "TGIF Home"){
 				</tr>		
 				`
 			}
-			tableTop(statistics)
+
+			
+			
+			if(document.title == "TGIF Attendance-House" || document.title == "TGIF Attendance-Senate"){
+				tableTopAttendance("tableAttendance")
+			}else if (document.title == "TGIF Party Loyalty-House" || document.title == "TGIF Party Loyalty-Senate"){
+				tableTopLoyalty("tableLoyalty")
+			}
+
+
+
 
 			function bottomTables(id, array){
 			
 				let lowerTable = document.getElementById(id)
-				array.forEach(member =>{
+				array.forEach(robertoCarlos =>{
 					lowerTable.innerHTML += `
 					<tr>
-						<td>${member.last_name}, ${member.first_name} ${member.middle_name || ""}</td>
-						<td>${member.missed_votes}</td>
-						<td>${member.missed_votes_pct}%</td>
+						<td>${robertoCarlos.last_name}, ${robertoCarlos.first_name} ${robertoCarlos.middle_name || ""}</td>
+						<td>${robertoCarlos.missed_votes}</td>
+						<td>${(robertoCarlos.missed_votes_pct).toFixed(2)}%</td>
+					</tr>
+					`
+				})
+			}
+
+			function bottomTablesLoyal(id, array){
+			
+				let lowerTable = document.getElementById(id)
+				array.forEach(unMillonDeAmigos =>{
+					lowerTable.innerHTML += `
+					<tr>
+						<td>${unMillonDeAmigos.last_name}, ${unMillonDeAmigos.first_name} ${unMillonDeAmigos.middle_name || ""}</td>
+						<td>${Math.round((unMillonDeAmigos.votes_with_party_pct*unMillonDeAmigos. total_votes) / 100)}</td>
+						<td>${unMillonDeAmigos.votes_with_party_pct}%</td>
 					</tr>
 					`
 				})
@@ -228,8 +293,8 @@ if(document.title == "TGIF Home"){
 				bottomTables("leastEngaged", statistics.lessVotesLost)
 				bottomTables("mostEngaged", statistics.moreVotesLost)
 			}else if (document.title == "TGIF Party Loyalty-House" || document.title == "TGIF Party Loyalty-Senate"){
-				bottomTables("leastLoyal", statistics.lessCommitted)
-				bottomTables("mostLoyal", statistics.moreCommitted)
+				bottomTablesLoyal("leastLoyal", statistics.moreCommitted)
+				bottomTablesLoyal("mostLoyal", statistics.lessCommitted)
 			}	
 		}
 	}
