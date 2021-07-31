@@ -1,0 +1,26 @@
+html *{
+	font-family: 'Montserrat', sans-serif;
+}
+
+.fondoColor, button.fondoColor, a.fondoColor{
+	background-color: rgba(2, 202, 202, 0.363);
+}
+
+.altura {
+	min-height: 80vh;
+}
+
+.alturaPrimeraCajaMain{
+	min-height: 50vh;
+}
+
+.tableColor,  label.fondoColor, div.fondoColor{
+	background-color: rgba(0, 0, 0, 0.164);
+}
+/* td a {
+	color: ;
+} */
+
+.colorPrueba {
+	background-color: rgba(255, 255, 255, 0.411);
+}
